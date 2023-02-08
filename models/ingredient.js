@@ -1,15 +1,15 @@
 const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 
-const categorySchema = new Schema({
+const ingredientSchema = new Schema({
     name: {
         type: String,
         required: true,
         unique: true
     },
-    description: {
+    quantityType: {
         type: String,
-        required: true
+        required: true,
     },
     photo_url: {
         type: String,
@@ -19,6 +19,6 @@ const categorySchema = new Schema({
     timestamps: true
 });
 
-const Category = mongoose.model('Category', categorySchema);
+const Ingredient = mongoose.model('Ingredient', ingredientSchema);
 
-module.exports = Category;
+module.exports = Ingredient;

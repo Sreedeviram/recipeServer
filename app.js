@@ -1,14 +1,30 @@
 var createError = require('http-errors');
 var express = require('express');
 var path = require('path');
-var cookieParser = require('cookie-parser');
 var logger = require('morgan');
+const passport = require('passport');
+const config = require('./config');
 
 var indexRouter = require('./routes/index');
 var usersRouter = require('./routes/users');
 const categoryRouter = require('./routes/categoryRouter');
 const recipeRouter = require('./routes/recipeRouter');
 const ingredientRouter = require('./routes/ingredientRouter');
+const favoriteRouter = require('./routes/favoriteRouter');
+
+const mongoose = require('mongoose');
+
+const url = config.mongoUrl;;
+const connect = mongoose.connect(url, {
+    useCreateIndex: true,
+    useFindAndModify: false,
+    useNewUrlParser: true, 
+    useUnifiedTopology: true
+});
+
+connect.then(() => console.log('Connected correctly to server'), 
+    err => console.log(err)
+);
 
 var app = express();
 
@@ -19,14 +35,19 @@ app.set('view engine', 'jade');
 app.use(logger('dev'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
-app.use(cookieParser());
-app.use(express.static(path.join(__dirname, 'public')));
+//app.use(cookieParser('12345-67890-09876-54321'));
+
+app.use(passport.initialize());
 
 app.use('/', indexRouter);
 app.use('/users', usersRouter);
 app.use('/categories', categoryRouter);
 app.use('/recipes', recipeRouter);
 app.use('/ingredients', ingredientRouter);
+
+app.use(express.static(path.join(__dirname, 'public')));
+
+app.use('/favorites', favoriteRouter);
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {

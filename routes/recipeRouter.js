@@ -1,44 +1,78 @@
 const express = require('express');
+const Recipe = require('../models/recipe');
+const authenticate = require('../authenticate');
+
 const recipeRouter = express.Router();
 
 recipeRouter.route('/')
-.all((req, res, next) => {
-    res.statusCode = 200;
-    res.setHeader('Content-Type', 'text/plain');
-    next();
+.get((req, res, next) => {
+    Recipe.find()
+    .populate('recipeCategory')
+    .populate('recipeIngredients.ingredient')
+    .then(recipes => {
+        res.statusCode = 200;
+        res.setHeader('Content-Type', 'application/json');
+        res.json(recipes);
+    })
+    .catch(err => next(err));
 })
-.get((req, res) => {
-    res.end('Will send all the recipes to you');
+.post(authenticate.verifyUser, authenticate.verifyAdmin, (req, res, next) => {
+    Recipe.create(req.body)
+    .then(recipe => {
+        console.log('Recipe Created ', recipe);
+        res.statusCode = 200;
+        res.setHeader('Content-Type', 'application/json');
+        res.json(recipe);
+    })
+    .catch(err => next(err));
 })
-.post((req, res) => {
-    res.end(`Will add the recipe: ${req.body.title}`);
-})
-.put((req, res) => {
+.put(authenticate.verifyUser, authenticate.verifyAdmin, (req, res) => {
     res.statusCode = 403;
     res.end('PUT operation not supported on /recipes');
 })
-.delete((req, res) => {
-    res.end('Deleting all recipes');
+.delete(authenticate.verifyUser, authenticate.verifyAdmin, (req, res, next) => {
+    Recipe.deleteMany()
+    .then(response => {
+        res.statusCode = 200;
+        res.setHeader('Content-Type', 'application/json');
+        res.json(response);
+    })
+    .catch(err => next(err));
 });
 
 recipeRouter.route('/:recipeId')
-.all((req, res, next) => {
-    res.statusCode = 200;
-    res.setHeader('Content-Type', 'text/plain');
-    next();
+.get((req, res, next) => {
+    Recipe.find()
+    .then(recipe => {
+        res.statusCode = 200;
+        res.setHeader('Content-Type', 'application/json');
+        res.json(recipe);
+    })
+    .catch(err => next(err));
 })
-.get((req, res) => {
-    res.end(`Will send details of the recipe: ${req.params.recipeId} to you`);
-})
-.post((req, res) => {
+.post(authenticate.verifyUser, authenticate.verifyAdmin, (req, res) => {
     res.statusCode = 403;
     res.end(`POST operation not supported on /recipes/${req.params.recipeId}`);  
 })
-.put((req, res) => {
-    res.end(`Updating the recipe : ${req.params.recipeId}`);   
+.put(authenticate.verifyUser, authenticate.verifyAdmin, (req, res) => {
+    Recipe.findByIdAndUpdate(req.params.recipeId, {
+        $set: req.body
+    }, { new: true })
+    .then(recipe => {
+        res.statusCode = 200;
+        res.setHeader('Content-Type', 'application/json');
+        res.json(recipe);
+    })
+    .catch(err => next(err));
 })
-.delete((req, res) => {
-    res.end(`Deleting  recipe : ${req.params.recipeId}`);
+.delete(authenticate.verifyUser, authenticate.verifyAdmin, (req, res, next) => {
+    Recipe.findByIdAndDelete(req.params.recipeId)
+    .then(response => {
+        res.statusCode = 200;
+        res.setHeader('Content-Type', 'application/json');
+        res.json(response);
+    })
+    .catch(err => next(err));
 });
 
 

@@ -1,44 +1,76 @@
 const express = require('express');
+const Category = require('../models/category');
+const authenticate = require('../authenticate');
+
 const categoryRouter = express.Router();
 
 categoryRouter.route('/')
-.all((req, res, next) => {
-    res.statusCode = 200;
-    res.setHeader('Content-Type', 'text/plain');
-    next();
+.get((req, res, next) => {
+    Category.find()
+    .then(categories => {
+        res.statusCode = 200;
+        res.setHeader('Content-Type', 'application/json');
+        res.json(categories);
+    })
+    .catch(err => next(err));
 })
-.get((req, res) => {
-    res.end('Will send all the categories to you');
+.post(authenticate.verifyUser, authenticate.verifyAdmin, (req, res, next) => {
+    Category.create(req.body)
+    .then(category => {
+        console.log('Category Created ', category);
+        res.statusCode = 200;
+        res.setHeader('Content-Type', 'application/json');
+        res.json(category);
+    })
+    .catch(err => next(err));
 })
-.post((req, res) => {
-    res.end(`Will add the category: ${req.body.name}`);
-})
-.put((req, res) => {
+.put(authenticate.verifyUser, authenticate.verifyAdmin, (req, res) => {
     res.statusCode = 403;
     res.end('PUT operation not supported on /categories');
 })
-.delete((req, res) => {
-    res.end('Deleting all categories');
+.delete(authenticate.verifyUser, authenticate.verifyAdmin, (req, res, next) => {
+    Category.deleteMany()
+    .then(response => {
+        res.statusCode = 200;
+        res.setHeader('Content-Type', 'application/json');
+        res.json(response);
+    })
+    .catch(err => next(err));
 });
 
 categoryRouter.route('/:categoryId')
-.all((req, res, next) => {
-    res.statusCode = 200;
-    res.setHeader('Content-Type', 'text/plain');
-    next();
+.get((req, res, next) => {
+    Category.findById(req.params.categoryId)
+    .then(category => {
+        res.statusCode = 200;
+        res.setHeader('Content-Type', 'application/json');
+        res.json(category);
+    })
+    .catch(err => next(err));
 })
-.get((req, res) => {
-    res.end(`Will send details of the category: ${req.params.categoryId} to you`);
-})
-.post((req, res) => {
+.post(authenticate.verifyUser, authenticate.verifyAdmin, (req, res) => {
     res.statusCode = 403;
     res.end(`POST operation not supported on /categories/${req.params.categoryId}`);  
 })
-.put((req, res) => {
-    res.end(`Updating the category : ${req.params.categoryId}`);   
+.put(authenticate.verifyUser, authenticate.verifyAdmin, (req, res, next) => {
+    Category.findByIdAndUpdate(req.params.categoryId, {
+        $set: req.body
+    }, { new: true })
+    .then(category => {
+        res.statusCode = 200;
+        res.setHeader('Content-Type', 'application/json');
+        res.json(category);
+    })
+    .catch(err => next(err));
 })
-.delete((req, res) => {
-    res.end(`Deleting  category : ${req.params.categoryId}`);
+.delete(authenticate.verifyUser, authenticate.verifyAdmin, (req, res, next) => {
+    Category.findByIdAndDelete(req.params.categoryId)
+    .then(response => {
+        res.statusCode = 200;
+        res.setHeader('Content-Type', 'application/json');
+        res.json(response);
+    })
+    .catch(err => next(err));
 });
 
 
