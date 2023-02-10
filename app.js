@@ -28,7 +28,8 @@ connect.then(() => console.log('Connected correctly to server'),
 
 var app = express();
 
-// Secure traffic only
+
+/* // Secure traffic only
 app.all('*', (req, res, next) => {
   if (req.secure) {
     return next();
@@ -36,8 +37,9 @@ app.all('*', (req, res, next) => {
       console.log(`Redirecting to: https://${req.hostname}:${app.get('secPort')}${req.url}`);
       res.redirect(301, `https://${req.hostname}:${app.get('secPort')}${req.url}`);
   }
-});
+}); */
 
+                 
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'jade');
@@ -59,6 +61,7 @@ app.use('/recipes', recipeRouter);
 app.use('/ingredients', ingredientRouter);
 app.use('/favorites', favoriteRouter);
 
+ 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
   next(createError(404));

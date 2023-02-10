@@ -7,7 +7,7 @@ const recipeIngredientSchema = new Schema({
         ref: 'Ingredient'
     },
     quantity: {
-        type: Number,
+        type: String,
         required: true
     },
 }, {
